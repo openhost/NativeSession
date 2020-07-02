@@ -29,7 +29,7 @@ class NativeRedisSessionHandler extends NativeSessionHandler
      *
      * @param string $savePath Path of redis server.
      */
-    public function __construct($savePath = 'tcp://127.0.0.1:6379?persistent=0')
+    public function __construct($savePath = 'tcp://127.0.0.1:6379?persistent=0', array $options = [])
     {
         if (!extension_loaded('redis')) {
             throw new \RuntimeException('PHP does not have "redis" session module registered');
@@ -41,5 +41,22 @@ class NativeRedisSessionHandler extends NativeSessionHandler
 
         ini_set('session.save_handler', 'redis');
         ini_set('session.save_path', $savePath);
+
+        $this->setOptions($options);
+    }
+
+    /**
+     * Set any redis ini values.
+     *
+     */
+    protected function setOptions(array $options)
+    {
+        $validOptions = array_flip([ 'cookie_lifetime' ]);
+
+        foreach ($options as $key => $value) {
+            if (isset($validOptions[$key])) {
+                ini_set('session.' . $key, $value);
+            }
+        }
     }
 }
